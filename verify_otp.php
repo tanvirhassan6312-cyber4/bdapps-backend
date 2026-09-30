@@ -42,7 +42,7 @@ $requestData = array(
 
 $requestJson = json_encode($requestData);
 
-$url = "https://developer.bdapps.com/subscription/otp/verify";
+$url = 'https://developer.bdapps.com/subscription/otp/verify';
 $ch = curl_init();
 curl_setopt($ch, CURLOPT_URL, $url);
 curl_setopt($ch, CURLOPT_POST, true);
