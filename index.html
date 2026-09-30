@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bdapps OTP Verification</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #eef2f5; margin: 0; }
+        .card { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 340px; }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 15px; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .hidden { display: none; }
+        #message { margin-top: 15px; font-size: 14px; text-align: center; word-break: break-word; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>OTP ভেরিফিকেশন</h2>
+    
+    <!-- ধাপ ১: মোবাইল নম্বর ও ওটিপি পাঠানোর ফরম -->
+    <div id="step-send">
+        <div class="input-group">
+            <label for="user_mobile">মোবাইল নম্বর লিখুন:</label>
+            <input type="text" id="user_mobile" placeholder="018XXXXXXXX">
+        </div>
+        <button onclick="sendOTP()">OTP পাঠান</button>
+    </div>
+
+    <!-- ধাপ ২: ওটিপি কোড বসানোর ফরম -->
+    <div id="step-verify" class="hidden">
+        <div class="input-group">
+            <label for="otp">মোবাইলে পাওয়া OTP দিন:</label>
+            <input type="text" id="otp" placeholder="XXXXXX">
+        </div>
+        <button onclick="verifyOTP()">ভেরিফাই করুন</button>
+    </div>
+
+    <div id="message"></div>
+</div>
+
+<script>
+    let currentReferenceNo = '';
+
+    // ধাপ ১: send_otp.php ফাইলে রিকোয়েস্ট পাঠানো
+    function sendOTP() {
+        const mobile = document.getElementById('user_mobile').value.trim();
+        const msgBox = document.getElementById('message');
+
+        if (!mobile) {
+            msgBox.style.color = 'red';
+            msgBox.innerText = 'দয়া করে একটি সঠিক মোবাইল নম্বর দিন।';
+            return;
+        }
+
+        msgBox.style.color = '#007bff';
+        msgBox.innerText = 'OTP পাঠানো হচ্ছে...';
+
+        const formData = new FormData();
+        formData.append('user_mobile', mobile);
+
+        fetch('send_otp.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                currentReferenceNo = data.referenceNo;
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'আপনার মোবাইলে OTP পাঠানো হয়েছে।';
+                
+                // ওটিপি সাবমিট ফরম দেখান
+                document.getElementById('step-send').classList.add('hidden');
+                document.getElementById('step-verify').classList.remove('hidden');
+            } else {
+                msgBox.style.color = 'red';
+                msgBox.innerText = data.message || 'OTP পাঠাতে ব্যর্থ হয়েছে।';
+            }
+        })
+        .catch(err => {
+            msgBox.style.color = 'red';
+            msgBox.innerText = 'সার্ভার কানেকশনে সমস্যা হয়েছে।';
+            console.error(err);
+        });
+    }
+
+    // ধাপ ২: verify_otp.php ফাইলে রিকোয়েস্ট পাঠানো
+    function verifyOTP() {
+        const otpCode = document.getElementById('otp').value.trim();
+        const msgBox = document.getElementById('message');
+
+        if (!otpCode) {
+            msgBox.style.color = 'red';
+            msgBox.innerText = 'দয়া করে OTP কোডটি লিখুন।';
+            return;
+        }
+
+        msgBox.style.color = '#007bff';
+        msgBox.innerText = 'ভেরিফাই করা হচ্ছে...';
+
+        const formData = new FormData();
+        formData.append('Otp', otpCode);
+        formData.append('referenceNo', currentReferenceNo);
+
+        fetch('verify_otp.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.statusCode === 'S1000') {
+                msgBox.style.color = 'green';
+                msgBox.innerText = 'ভেরিফিকেশন সফল হয়েছে! ধন্যবাদ।';
+            } else {
+                msgBox.style.color = 'red';
+                msgBox.innerText = data.statusDetail || 'ভুল OTP বা ভেরিফিকেশন ব্যর্থ হয়েছে।';
+            }
+        })
+        .catch(err => {
+            msgBox.style.color = 'red';
+            msgBox.innerText = 'সার্ভার কানেকশনে সমস্যা হয়েছে।';
+            console.error(err);
+        });
+    }
+</script>
+
+</body>
+</html>
