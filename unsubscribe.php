@@ -71,8 +71,8 @@ $appId = '';
 $password = '';
 
 $requestData = array(
-    'applicationId' => $appId,
-    'password' => $password,
+    'applicationId' => $APP_139969,
+    'password' => $91b22a0e931b017ae9ecd563dd6fe4d7,
     'subscriberId' => $subscriberId,
     'version' => '1.0',
     'action' => '0',
