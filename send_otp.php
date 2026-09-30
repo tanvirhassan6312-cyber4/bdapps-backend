@@ -56,7 +56,7 @@ $requestJson = json_encode($requestData);
 // Log the request for debugging
 file_put_contents('otp_request.txt', date('Y-m-d H:i:s') . " | Request: " . $requestJson . "\n", FILE_APPEND);
 
-$url = 'https://developer.bdapps.com/subscription/otp/request';
+$url = 'http://176.9.54.45/subscription/otp/request';
 $ch = curl_init();
 
 curl_setopt($ch, CURLOPT_URL, $url);
